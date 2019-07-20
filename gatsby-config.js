@@ -26,6 +26,19 @@ module.exports = {
         display: `minimal-ui`,
       },
     },
-    "gatsby-plugin-mdx",
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `blog`,
+        path: `${__dirname}/src/pages/blog`,
+      },
+    },
+    {
+      resolve: `gatsby-plugin-mdx`,
+      options: {
+        extensions: [`.mdx`, `.md`],
+        defaultLayout: require.resolve("./src/components/blog-post-layout.js"),
+      },
+    },
   ],
 }

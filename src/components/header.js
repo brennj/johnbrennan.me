@@ -1,6 +1,23 @@
-import { Link } from "gatsby"
+import { Link as L } from "gatsby"
 import PropTypes from "prop-types"
 import React from "react"
+import styled from "styled-components"
+
+const Link = styled(L)`
+  margin-right: 1rem;
+`
+
+const NavLink = ({ to, children }) => (
+  <Link
+    to={to}
+    style={{
+      color: `inherit`,
+      textDecoration: `none`,
+    }}
+  >
+    {children}
+  </Link>
+)
 
 const Header = ({ siteTitle }) => (
   <header style={{ marginBottom: `1.45rem` }}>
@@ -12,15 +29,8 @@ const Header = ({ siteTitle }) => (
       }}
     >
       <nav>
-        <Link
-          to="/"
-          style={{
-            color: `inherit`,
-            textDecoration: `none`,
-          }}
-        >
-          Home
-        </Link>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/blog">Writing</NavLink>
       </nav>
     </div>
   </header>

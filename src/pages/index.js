@@ -7,8 +7,8 @@ export default () => (
     <SEO title="Home" />
     <h1>Hi! John here.</h1>
     <p>
-      I'm a frontend software engineer working in Dublin, Ireland. I share and
-      document about software development and whatever else I find interesting.
+      I'm a software engineer working in Dublin, Ireland. I share and document
+      about development and whatever else I find interesting.
     </p>
 
     <hr />
