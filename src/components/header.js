@@ -2,6 +2,7 @@ import { Link as L } from "gatsby"
 import PropTypes from "prop-types"
 import React from "react"
 import styled from "styled-components"
+import Box from "./Box"
 
 const Link = styled(L)`
   margin-right: 1rem;
@@ -19,21 +20,15 @@ const NavLink = ({ to, children }) => (
   </Link>
 )
 
-const Header = ({ siteTitle }) => (
-  <header style={{ marginBottom: `1.45rem` }}>
-    <div
-      style={{
-        margin: `0 auto`,
-        maxWidth: 960,
-        padding: `1.45rem 1.0875rem`,
-      }}
-    >
+const Header = () => (
+  <Box py={3} mb={3}>
+    <header>
       <nav>
         <NavLink to="/">Home</NavLink>
         <NavLink to="/blog">Writing</NavLink>
       </nav>
-    </div>
-  </header>
+    </header>
+  </Box>
 )
 
 Header.propTypes = {

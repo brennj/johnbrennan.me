@@ -1,0 +1,81 @@
+---
+title: Why I love to test with @testing-library/react
+date: "2019-03-16T21:57:37.654Z"
+---
+
+The ReactJS team released the Hooks API in 16.8. In an accompanying blog post, `@testing-library/react` got an official endorsement from them. They highlight the library for how it makes testing easy. I am delighted to see this. I wanted to share why this library is awesome and how it will empower you to be a better frontend developer.
+
+This post will explore some of the philosophy behind why testing is important. The goal is to share some practical tips on how to use `@testing-library/react` that you can use today.
+
+### Why test? 🤔
+
+As software engineers, we get to work on interesting domains. In my case, I work over at [VSware](https://www.vsware.ie/) helping make principals and teachers day to day work easier. It’s amazing! But, I tend to struggle with the fact that there is so much to it. Working on existing features. Fixing bugs and defects. Implementing new requirements. Traversing and understanding legacy codebases. Trying to keep good, clean engineering practices. I find this overwhelming. Complexity is painful. 🤯
+
+It is irrational behaviour. I was getting bogged down by this complexity. But, one way that helped me be less fretful was being serious about my testing disciplines. Testing gives me confidence!
+
+In my career, I’ve been with companies that focus on delivering a product. The need for confidence comes from my experiences with this. They focus on one thing: providing value to their customers. I’m hired to make someone’s life easier. To provide that value. They have a set of things they need to do every day, and it’s important that they’re able to do their job. They do not care about the latest frontend framework, or how many hooks you can use, they want to get their job done. Part of this confidence comes from having a suite of green, passing tests.
+
+I can go home feeling easy having certainty. Certain that critical, value-generating features are working. There’s joy knowing it’s unlikely I’ll get paged at three in the morning because a feature broke.
+
+In turn, this confidence gives great benefits. Being able to keep up momentum for developing new features at a faster rate. A more useful asset to my teammates. Having context when I haven’t touched a feature in months, or ever before.
+
+Having tests is like having a set of low-level documentation. But these documents verify your software and tell you about what it is going to do.
+
+#### What do I test? 🤷‍♀️
+
+So we know that testing is important, but what do you actually test? It all goes back to your user. What do they need to do in your product? What gives them value? Those critical value generating features and flows are what to focus on. Ensuring the happy paths all work is a great place is start if you are struggling to come up with a solid set of tests. Think of what the user needs to do and try and make your test do that.
+
+### How to test 💡
+
+This is where we enter react-testing-library. Written by [Kent C. Dodds](https://kentcdodds.com/), this is a library that promotes focusing your tests on user behaviour. It provides a nice set of APIs that help make things easy. Easy to grab elements off the page/component. Also easy to manipulate these elements, ready for assertions with tools like Jest.
+
+I’ll detail some ways you can get the best use out of it. I want to promote some techniques that give tests the same love as the production code.
+
+#### Make your tests resilient to change 💃
+
+_Worthy to note: A lot of these ideas come with full credit by_ [_an amazing article_](https://blog.kentcdodds.com/making-your-ui-tests-resilient-to-change-d37a6ee37269) _by Kent C. Dodds. I’m putting my own spin on this already well-established idea!_
+
+Tests shouldn’t break by changing some implementation detail of your component. CSS changes, refactoring to Hooks or moving components around in your code. Things shouldn’t break if the functionality remains the same. Nonetheless, it’s fair to expect things to break if their APIs change. There are very few other cases that justify this.
+
+Let’s take a custom `<Input />` component. A small wrapper around the native `input` with an optional `label`:
+
+```
+export function Input({ label, id, ...props }) {
+  return (
+    <>
+      {label && (
+        <label className="myFancyLabelStyles" htmlFor={id}>
+          {label}
+        </label>
+      )}
+      <input className="myFancyInputStyles" id={id} {...props} />
+    </>
+  )
+}
+```
+
+First of all your immediate gut reaction would be like: why would I even bother testing this? It’s too simple. This might be true depending on your use case! Let’s say though, this `<Input />` appears all across your product. Forms and user interactions all utilise it. It’s valid to verify it has the standard behaviour of a normal HTML `input` tag. This is so that there aren’t breakages across your product if something bad gets into this component.
+
+Having a good selector for your component can help make your test resilient. Let's examine the advantages and disadvantages of some:
+
+**By `class/className` eg `.myFancyInputStyles` ❌**
+
+Classes are a concern of styling. I disagree with using them in your test. You should be able to change CSS without your test messing up of wanting to use a different class/set of styles. What if I want to replace my input style with the Tailwind CSS framework? Or `styled-components`? Avoid using these in your test.
+
+**By the HTML tag eg. `input` 🤷‍♂️**
+
+I would also avoid these unless I knew for certain I would only have one input in my component that I’m testing. Otherwise, there could be dancing trying to organise various `input` elements. Trying to tell them apart from each other would be a mess.
+
+**By aria label eg. `[aria-label="username"]` 👍**
+
+A great idea. Promotes accessibility by labelling elements by what their functional role is. In the case of the example, it’s easy to see its an element that concerns itself with a username.
+
+**By test ID eg. `[data-testid="username"]` 🙌**
+
+By using a test ID, we are making the relationship between a test and a part of the component _explicit._ `react-testing-library` provides some useful helpers to work with components written in this way.
+
+**By label/placeholder value eg.** `/username/i**` 🤗\*\*
+
+To me, this is one of the most intuitive methods and has helped me read and write tests in a human way. Its what has made me completely fall in love with `react-testing-library`.
+
+Heres some examples of testing our above `<Input/>`:
