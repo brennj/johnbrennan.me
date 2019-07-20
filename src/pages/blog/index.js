@@ -1,30 +1,6 @@
-// src/components/blog/index.js
 import React from "react"
 import { graphql, Link } from "gatsby"
 import Layout from "../../components/layout"
-
-function BlogIndex({ data }) {
-  const { edges: posts } = data.allMdx
-  return (
-    <Layout>
-      {posts.map(({ node }) => {
-        const { title } = node.frontmatter
-        return (
-          <div key={node.id}>
-            <header>
-              <div>{title}</div>
-            </header>
-            <p>{node.excerpt}</p>
-            <Link to={node.fields.slug}>View Article</Link>
-            <hr />
-          </div>
-        )
-      })}
-    </Layout>
-  )
-}
-
-export default BlogIndex
 
 export const pageQuery = graphql`
   query blogIndex {
@@ -38,9 +14,36 @@ export const pageQuery = graphql`
           }
           frontmatter {
             title
+            date
           }
         }
       }
     }
   }
 `
+
+export default function BlogIndex({ data }) {
+  const { edges } = data.allMdx
+  const posts = edges.sort((x, y) => new Date(x) - new Date(y))
+  console.log(posts)
+  return (
+    <Layout>
+      {posts.map(
+        ({
+          node: {
+            id,
+            excerpt,
+            fields: { slug },
+            frontmatter: { date, title },
+          },
+        }) => (
+          <Link to={slug} key={id}>
+            <h3>{title}</h3>
+            <p>{excerpt}</p>
+            <hr />
+          </Link>
+        )
+      )}
+    </Layout>
+  )
+}
