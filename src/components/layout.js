@@ -22,7 +22,7 @@ const Layout = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <>
-        <Box width={[1, 3 / 4, 960]} m="auto">
+        <Box width={[1, 5 / 6, 3 / 4, 960]} p={[3, 0]} m="auto">
           <Header siteTitle={data.site.siteMetadata.title} />
           <main>{children}</main>
         </Box>

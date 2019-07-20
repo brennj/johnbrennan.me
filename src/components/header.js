@@ -21,7 +21,7 @@ const NavLink = ({ to, children }) => (
 )
 
 const Header = () => (
-  <Box py={4} mb={2}>
+  <Box py={[2, 4]} mb={2}>
     <header>
       <nav>
         <NavLink to="/">Home</NavLink>
