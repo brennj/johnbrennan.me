@@ -79,3 +79,136 @@ By using a test ID, we are making the relationship between a test and a part of 
 To me, this is one of the most intuitive methods and has helped me read and write tests in a human way. Its what has made me completely fall in love with `react-testing-library`.
 
 Heres some examples of testing our above `<Input/>`:
+
+```
+import "react-testing-library/cleanup-after-each"
+import React from "react"
+import { Input } from "./index"
+import { render, fireEvent } from "react-testing-library"
+
+it('Able to get input by placeholder', () => {
+ const { getByPlaceholderText } = render(<Input placeholder={'Name'} />)
+ const input = getByPlaceholderText('Name')
+ fireEvent.change(input, { target: { value: 'John' } })
+ expect(input.value).toBe('John')
+})
+
+it('Able to get by test id', () => {
+ const { getByTestId } = render(<Input data-testid="username" />)
+ const input = getByTestId('username')
+ fireEvent.change(input, { target: { value: 'johnb' } })
+ expect(input.value).toBe('johnb')
+})
+
+it('Able to get input by label', () => {
+ const { getByLabelText, debug } = render(<Input label={'Surname'} id="surname" />)
+ const input = getByLabelText(/surname/i)
+ debug(input)
+ fireEvent.change(input, { target: { value: 'Brennan' } })
+ expect(input.value).toBe('Brennan')
+})
+```
+
+The power comes from the `render` function that it provides in its top-level API. It works like the render from `react-dom`. Except it returns a lot of useful query functions to get parts of the component. `getByPlaceHolderText` , `getByTestId` and `getByLabelText` get our `input` element. `react-testing-library` provides another top-level function called `fireEvent`. This can send an event to a component to then do some assertions on the element.
+
+Another cool feature I used in the last test is `debug` which is also returned from the `render` function. Often I find it difficult to debug tests when using Jest. It can be difficult to understand what’s going on in the component without being able to see it in the browser. `debug` pretty prints your component. It can take an optional parameter to only print the HTML, depending on what element you pass to the function.
+
+The API of the library is small, there’s only a few you need to know. But they all provide you with the tools to write powerful tests. I recommend playing with the library in an existing project of yours and see how it fairs.
+
+### Structuring your tests for success 💪
+
+The next part I want to focus on is the idea of getting the best bang for your buck when writing your tests. I’ve wasted a lot of time writing lots of ugly boilerplate, and it deters me from writing tests. It’s annoying to set up. It’s a mindset you have to get into, treating your code with the same level of respect as production code. Avoiding unnecessary duplication where applicable, using patterns to help make your life easier.
+
+#### The global render function 🌎
+
+There are a lot of global concerns in a typical React application. Global state management with Redux. Routing with something like Reach Router or React Router. Authentication. Internationalization. I could go on. When starting out, I found it confusing trying to juggle these concerns along with my tests. Having to try mock things, ending in ugly boilerplate. It’s frustrating: they’re implementation details and I don’t want to care about them.
+
+Where `@testing-library/react` shines is in the power of the render function. You can wrap the global concerns by extending the functionality of the render function. Let’s look at an example to illustrate this:
+
+```
+import { render as r } from "react-testing-library";
+import { createStore } from "redux";
+import { Provider as ReduxProvider } from "react-redux";
+import { LocationProvider, createHistory } from "@reach/router";
+import { AuthenicationProvider, createAuth } from "../auth";
+import { reducer } from "../state";
+
+export function reducer(
+  ui,
+  {
+    initialState = {},
+    store = createStore(reducer, initialState),
+    history = createHistory(),
+    auth = createAuth()
+  } = {}
+) {
+  const WrapperUI = () => (
+    <ReduxProvider store={store}>
+      <AuthenicationProvider auth={auth}>
+        <LocationProvider history={history}>{ui}</LocationProvider>
+      </AuthenicationProvider>
+    </ReduxProvider>
+  );
+  return { ...r(<WrappedUI />), store, history };
+}
+```
+
+Here I have `redux` , `@reach/router` and a fictitious custom Authentication module. In a test utility file, I’m taking the ‘default’ render function and aliasing it to `r`. Then I export my own render function which has knowledge of all global dependencies. I’m also using a list of options that have some sane defaults. But, you can override depending on the specific test use-case.
+
+Let’s say you want to test some non-initial step in a user flow. An option is sending some initial information to the redux store. An example where I want to pass in a starting path, so I can do some assertions verifying going to the correct URL. The returned `history` object would be useful here.
+
+You can extend this `render` function for whatever makes sense for your application. If it's a global concern — add it here when your tests call for it so that you don’t have to mock as many things.
+
+#### The test specific render function
+
+I find difficult to understand tests when there is a lot of boilerplate, it makes the test useless to me. It’s mental overhead that I hate and makes testing less appealing. I want to be able to understand what the test is trying to do as quick as possible. I don’t want to get bogged down about the details of the dancing it needs to perform assertions.
+
+When combined with the global render function, test specific render functions shine. You can capture areas of interest in your component. Those used for triggering actions and manipulating data. They are all encapsulated in this function, extending the default utilities provided.
+
+For an example `<LoginForm />` component, we could have a structure in a test like so:
+
+```
+import { render as r } from "../test-utils";
+
+function render(ui, options) {
+  const utils = r(ui, options);
+  return {
+    ...utils,
+    username: utils.getByLabelText(/username/i),
+    password: utils.getByLabelText(/password/i),
+    login: utils.getByText(/login/i),
+    successModal: () => utils.getByTestId("login-success")
+  };
+}
+```
+
+For this particular component, this would provide all the things I need to write tests. Input getters for the username and password fields. Along with the login button and success message. The `successModal` is in a function is because I know it won’t render on the initial mount. I can delay the call of execution so the test doesn’t break not being able to find a particular test ID.
+
+Using this in an actual test might look like:
+
+```
+it('Should let me login given a username and password', () => {
+  const auth = { login: jest.fn() }
+  const { username, password, login } = render(<Login /> { auth })
+
+  fireEvent.change(username, { target: { value: 'john' } })
+  fireEvent.change(password, { target: { value: 'sekret' } })
+  fireEvent.click(login)
+
+  expect(auth.login).toHaveBeenCalledWith('john', 'sekret')
+})
+```
+
+It’s a simple example but it illustrates an important goal. There is no fluff other than the arrangement of the authentication mock to avoid hitting a real API. It is the elements that we need and no more. A lot nicer to read than having to scan through `getByX` statements in your test code. This test is to the point of what the assertion is trying to achieve.
+
+#### The call to action 📣
+
+I learned all these ideas from the awesome [testingjavascript.com](https://testingjavascript.com/) course. I recommend you ask your manager to get this course for you. Or buy it if you’re in a position to do so! It was beneficial for me and helped me ‘click’ with testing UI. You can also head over to [testing-library.com](https://testing-library.com/) to learn more about the library and its amazing, simple APIs.
+
+#### **Conclusion 🔚**
+
+The ideas presented in this article aren’t groundbreaking. They pack a punch for a topic I once considered boring for a long time. I can’t recommend you giving this library a shot enough. It’s been super useful to me, where I’ve actually _wanted_ to write tests as part of my feature work in my job. The patterns I’ve discussed have given me wins over and over, where it feels like a dream to work with. It’s given me that confidence I mentioned at the start of the post. I am more comfortable shipping my features to production.
+
+I talked all about the content of this post at the ReactJS Dublin meetup in January 2019. If you’d like a video version of the presented ideas, give it a watch!
+
+If you have any questions or thoughts about testing in the frontend, I would love to hear it! Catch me on twitter [https://twitter.com/jgbrenno](https://twitter.com/jgbrenno)
