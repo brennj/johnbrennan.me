@@ -12,9 +12,7 @@ export default function BlogPostLayout({
     <Layout>
       <article>
         <h1>{title}</h1>
-        <Box mb={4}>
-          <date>{new Date(date).toLocaleDateString()}</date>
-        </Box>
+        <Box mb={4}>{new Date(date).toLocaleDateString()}</Box>
         {children}
       </article>
     </Layout>
