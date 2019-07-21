@@ -35,7 +35,15 @@ export default ({
     <h1>Hi! John here.</h1>
     <p>
       I'm a software engineer working in Dublin, Ireland. I share and document
-      about development and whatever else I find interesting.
+      about development and whatever else I find interesting. Catch me on{" "}
+      <a href="https://twitter.com/jgbrenno" target="_blank">
+        Twitter
+      </a>{" "}
+      or{" "}
+      <a href="https://www.linkedin.com/in/jgbrennan/" target="_blank">
+        LinkedIn
+      </a>
+      .
     </p>
 
     <hr />
@@ -48,7 +56,5 @@ export default ({
     >
       {posts.map(BlogPostCard)}
     </Box>
-
-    <hr />
   </Layout>
 )
