@@ -13,7 +13,7 @@ export default function BlogPostLayout({
       <article>
         <h1>{title}</h1>
         <Box mb={4}>{new Date(date).toLocaleDateString()}</Box>
-        {children}
+        <Box maxWidth="60ch">{children}</Box>
       </article>
     </Layout>
   )
