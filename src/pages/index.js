@@ -7,7 +7,7 @@ import Box from "../components/Box"
 
 export const pageQuery = graphql`
   query home {
-    allMdx(limit: 2) {
+    allMdx(limit: 3, sort: { fields: [frontmatter___date], order: DESC }) {
       edges {
         node {
           id
